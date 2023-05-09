@@ -1,1 +1,1 @@
-# IA_Bimaru
+# Projeto de Inteligência Artificial de 2023
