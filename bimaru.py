@@ -7,6 +7,9 @@
 # 00000 Nome2
 
 import sys
+from sys import stdin
+import numpy as np
+
 from search import (
     Problem,
     Node,
@@ -17,6 +20,7 @@ from search import (
     recursive_best_first_search,
 )
 
+BOARD_SIZE = 10
 
 class BimaruState:
     state_id = 0
@@ -35,10 +39,14 @@ class BimaruState:
 class Board:
     """Representação interna de um tabuleiro de Bimaru."""
 
+    def __init__(self, board) -> None:
+        self.board = board
+
     def get_value(self, row: int, col: int) -> str:
         """Devolve o valor na respetiva posição do tabuleiro."""
-        # TODO
-        pass
+
+        return board[row][col]
+
 
     def adjacent_vertical_values(self, row: int, col: int) -> (str, str):
         """Devolve os valores imediatamente acima e abaixo,
@@ -54,17 +62,39 @@ class Board:
 
     @staticmethod
     def parse_instance():
-        """Lê o test do standard input (stdin) que é passado como argumento
-        e retorna uma instância da classe Board.
 
-        Por exemplo:
-            $ python3 bimaru.py < input_T01
+        board = np.empty((BOARD_SIZE, BOARD_SIZE), dtype=str)
+                         
+        # Salta o primeiro valor do input (ROW e COLUMN)
+        row = [int(x) for x in stdin.readline().split()[1:]] 
+        column = [int(x) for x in stdin.readline().split()[1:]]
 
-            > from sys import stdin
-            > line = stdin.readline().split()
-        """
-        # TODO
-        pass
+        # Numero de pistas
+        hint_num = int(stdin.readline())
+
+        # Hints
+        for cont in range(hint_num):
+            # Skip no HINT
+            hint = stdin.readline().split()[1:]
+
+            board[int(hint[0]), int(hint[1])] = hint[2]
+
+        return Board(board)
+
+    # Imprime o tabuleiro no formato indicado
+    def print_board(self):
+        output = ""
+
+        board = self.board
+
+        for i in range(BOARD_SIZE):
+            for j in range(BOARD_SIZE):
+                output += board[i][j]
+
+            output += "\n"
+
+        print(output)
+        
 
     # TODO: outros metodos da classe
 
@@ -105,9 +135,15 @@ class Bimaru(Problem):
 
 
 if __name__ == "__main__":
-    # TODO:
+
     # Ler o ficheiro do standard input,
+    board = Board.parse_instance()
+
     # Usar uma técnica de procura para resolver a instância,
+
     # Retirar a solução a partir do nó resultante,
+
     # Imprimir para o standard output no formato indicado.
-    pass
+    """ board.print_board() <- Método certo, mas só funciona com o tabuleiro completo """
+
+    print(board.board)
