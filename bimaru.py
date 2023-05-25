@@ -61,14 +61,21 @@ class Board:
     def adjacent_vertical_values(self, row: int, col: int) -> (str, str):
         """Devolve os valores imediatamente acima e abaixo,
         respectivamente."""
-        # TODO
-        pass
+        board = self.board
+
+        if row == 0 or row == BOARD_SIZE - 1:
+            return 
+        return (board[row - 1][col], board[row + 1][col])
+    
 
     def adjacent_horizontal_values(self, row: int, col: int) -> (str, str):
         """Devolve os valores imediatamente à esquerda e à direita,
         respectivamente."""
-        # TODO
-        pass
+        board = self.board
+
+        if col == 0 or col == BOARD_SIZE - 1:
+            return 
+        return (board[row][col - 1], board[row][col + 1])
 
     @staticmethod
     def parse_instance():
@@ -122,7 +129,77 @@ class Board:
 
         print(output)
         
+    # Retorna 1 caso o tabuleiro esteja cheio
+    def check_full_board(self):
+        board = self.board
 
+        for i in range(BOARD_SIZE):
+            for j in range(BOARD_SIZE):
+                if board[i][j] == '':
+                    return 0
+        return 1
+
+    def coloca_barco(self, action):
+        
+        # Evitar overwrite no original
+        board = self.board
+
+        x = action[0][0]
+        y = action[0][1]
+        # h se horizontal, v se vertical, outro se size = 1
+        orientacao = action[1]
+        size = action[2]
+
+
+        # Coloca o barco 
+
+        # Size 1
+        if size == 1:
+            board[x][y] = 'm'
+
+        # Horizontal
+        elif orientacao == 'h':
+            board[x][y] = 'l'
+
+            for i in range(1, size - 1):
+                board[x][y + i] = 'm'
+
+            board[x][y + size - 1] = 'r'
+        
+        # Vertical
+        else:
+            board[x][y] = 't'
+
+            for i in range(1, size - 1):
+                board[x + i][y] = 'm'
+
+            board[x + size - 1][y] = 'b'
+
+
+        # Coloca as aguas
+
+        # Horizontal ou size 1
+        if size == 1 or orientacao == 'h':
+            for i in range(x - 1, x + 2):
+                if i < 0 or i >= 10:
+                    continue
+
+                for j in range(y - 1, y + size + 1):
+                    if 0 <= j < 10 and board[i][j] == '.':
+                        board[i][j] = "w"
+        
+        # Vertical
+        else:
+            for i in range(x - 1, x + size + 1):
+                if i < 0 or i >= 10:
+                    continue
+
+                for j in range(y - 1, y + 2):
+                    if 0 <= j < 10 and board[i][j] == '.':
+                        board[i][j] = "w"
+
+        return Board(board, self.rows, self.columns)
+    
     # TODO: outros metodos da classe
 
 
@@ -130,17 +207,18 @@ class Bimaru(Problem):
     def __init__(self, board: Board):
         """O construtor especifica o estado inicial."""
         
-        self.initial = BimaruState(board)
+        initial = BimaruState(board)
+        super().__init__(initial)
 
-
+    # Acao: [posicao, orientacao (h/v), tamanho do barco]
     def actions(self, state: BimaruState):
         """Retorna uma lista de ações que podem ser executadas a
         partir do estado passado como argumento."""
-        acoes = []
         
-        # TODO
+        if state.board.check_full_board():
+            return []
 
-        return acoes
+        return []
 
 
     def result(self, state: BimaruState, action):
@@ -148,14 +226,17 @@ class Bimaru(Problem):
         'state' passado como argumento. A ação a executar deve ser uma
         das presentes na lista obtida pela execução de
         self.actions(state)."""
-        pass
+        
+        new_board = board.coloca_barco()
 
+        return BimaruState(new_board)
 
     def goal_test(self, state: BimaruState):
         """Retorna True se e só se o estado passado como argumento é
         um estado objetivo. Deve verificar se todas as posições do tabuleiro
         estão preenchidas de acordo com as regras do problema."""
-        pass
+        
+        return state.board.check_full_board()
     
     def h(self, node: Node):
         """Função heuristica utilizada para a procura A*."""
@@ -173,18 +254,18 @@ if __name__ == "__main__":
     board = Board.parse_instance()
     board.fill_water()
 
-    # Debugging
-    board.print_board()
-
     # Inicializa o problem (que cria o primeiro state)
     problem = Bimaru(board)
 
+    # Debug
+    board.print_board()
+    board.coloca_barco([[5,0], 'h', 5]).print_board()
+
     # Usar uma técnica de procura para resolver a instância,
-    # TODO: Mudar search??
-    result_node = depth_first_tree_search(problem)
+        #result_node = depth_first_tree_search(problem)
 
     # Retirar a solução a partir do nó resultante,
-    # TODO: retirar tabuleiro final result do result_node
+        #result = result_node.state.board
 
     # Imprimir para o standard output no formato indicado.
-    #result.print_board() # RETIRAR OS ESPAÇOS NA ENTREGA
+        #result.print_board() # RETIRAR OS ESPAÇOS NA ENTREGA
