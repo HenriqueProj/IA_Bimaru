@@ -27,14 +27,13 @@ BOARD_SIZE = 10
 class BimaruState:
     state_id = 0
 
-    def __init__(self, board):
+    def __init__(self, board, boards_left):
         self.board = board
         self.id = BimaruState.state_id
         BimaruState.state_id += 1
-
         # boards_left[tamanho do barco] = numero de barcos desse tamanho
             # Ex: boards_left[4] = 1
-        self.boards_left = [0, 4, 3, 2, 1]
+        self.boards_left = boards_left
 
     def __lt__(self, other):
         return self.id < other.id
@@ -46,7 +45,7 @@ class Board:
     """Representação interna de um tabuleiro de Bimaru."""
 
     def __init__(self, board, rows, columns) -> None:
-        self.board = board
+        self.board = np.copy(board)
 
         # Valores de cells por linhas e colunas (Por no state??)
         self.rows = rows
@@ -96,7 +95,17 @@ class Board:
 
             board[int(hint[0]), int(hint[1])] = hint[2]
 
+            if hint[2] != 'W':
+                rows[int(hint[0])] -= 1
+                columns[int(hint[1])] -= 1
+
         return Board(board, rows, columns)
+
+    def rodeia_agua(self, x, y):
+        for i in range(x-1, x+2):
+            for j in range(y-1, y+2):
+                if (i != x or j != y) and 0 <= i < 10 and 0 <= j < 10:
+                    self.board[i, j] = '.'
 
     # Preenche as linhas ou colunas de agua
     def fill_water(self):
@@ -104,13 +113,21 @@ class Board:
             if self.rows[i] != 0:
                 continue
             for j in range(BOARD_SIZE):
-                self.board[i][j] = '.'
+                if self.board[i][j] == '':
+                    self.board[i][j] = '.'
 
         for i in range(BOARD_SIZE):
             if self.columns[i] != 0:
                 continue
             for j in range(BOARD_SIZE):
-                self.board[j][i] = '.'
+                if self.board[j][i] == '':
+                    self.board[j][i] = '.'
+
+        board = self.board
+        for i in range(BOARD_SIZE):
+            for j in range(BOARD_SIZE):
+                if board[i][j] == 'C':
+                    self.rodeia_agua(i, j)
 
     # Imprime o tabuleiro no formato indicado
     def print_board(self):
@@ -151,6 +168,8 @@ class Board:
         size = action[2]
 
 
+        pos_inicial = board[x][y]
+
         # Coloca o barco 
 
         # Size 1
@@ -168,7 +187,8 @@ class Board:
         
         # Vertical
         else:
-            board[x][y] = 't'
+            if board[x][y] == '':
+                board[x][y] = 't'
 
             for i in range(1, size - 1):
                 board[x + i][y] = 'm'
@@ -185,8 +205,8 @@ class Board:
                     continue
 
                 for j in range(y - 1, y + size + 1):
-                    if 0 <= j < 10 and board[i][j] == '.':
-                        board[i][j] = "w"
+                    if 0 <= j < 10 and board[i][j] == '':
+                        board[i][j] = "."
         
         # Vertical
         else:
@@ -195,8 +215,20 @@ class Board:
                     continue
 
                 for j in range(y - 1, y + 2):
-                    if 0 <= j < 10 and board[i][j] == '.':
-                        board[i][j] = "w"
+                    if 0 <= j < 10 and board[i][j] == '':
+                        board[i][j] = "."
+
+        # Ajusta as linhas e colunas
+        if orientacao == 'h':
+            self.rows[x] -= size
+
+            for j in range(y, y + size):
+                self.columns[j] -= 1
+        else:
+            self.columns[y] -= size
+
+            for i in range(x, x + size):
+                self.rows[i] -= 1
 
         return Board(board, self.rows, self.columns)
     
@@ -207,18 +239,60 @@ class Bimaru(Problem):
     def __init__(self, board: Board):
         """O construtor especifica o estado inicial."""
         
-        initial = BimaruState(board)
+        initial = BimaruState(board, boards_left=[0,4,3,2,1])
         super().__init__(initial)
 
     # Acao: [posicao, orientacao (h/v), tamanho do barco]
     def actions(self, state: BimaruState):
         """Retorna uma lista de ações que podem ser executadas a
         partir do estado passado como argumento."""
-        
+
         if state.board.check_full_board():
             return []
 
-        return []
+        actions = []
+        biggest_boat = 0
+
+        boards_left = state.boards_left
+        board = state.board.board
+
+        # Descobrir o maior barco possivel
+        for i in range(4):
+            if boards_left[4 - i] > 0:
+                biggest_boat = 4 - i
+                break
+
+        print(biggest_boat)
+        # Procura horizontal
+        for i in range(BOARD_SIZE):
+            if state.board.rows[i] < biggest_boat:
+                continue
+
+            for j in range(BOARD_SIZE):
+                for size in range(biggest_boat):
+                    if j + size >= 10 or board[i][j + size] == '.' or board[i][j + size] == 'W':
+                        break
+                    
+                    if size == biggest_boat - 1:
+                        actions += [[ [i,j], ['h'], biggest_boat ]]
+                    
+        # Procura vertical
+        for j in range(BOARD_SIZE):
+            
+            if state.board.columns[j] < biggest_boat:
+                continue
+
+            for i in range(BOARD_SIZE):
+                for size in range(biggest_boat):
+                    if i + size >= 10 or board[i + size][j] == '.' or board[i + size][j] == 'W':
+                        break
+
+                    if size == biggest_boat - 1:
+                        actions += [[ [i,j], ['v'], biggest_boat ]]
+
+        print(actions)
+        print(state.board.rows, state.board.columns)
+        return actions
 
 
     def result(self, state: BimaruState, action):
@@ -227,9 +301,14 @@ class Bimaru(Problem):
         das presentes na lista obtida pela execução de
         self.actions(state)."""
         
-        new_board = board.coloca_barco()
+        new_board = board.coloca_barco(action)
 
-        return BimaruState(new_board)
+        boards_left = state.boards_left
+        boards_left[action[2]] -= 1
+
+        new_board.print_board()
+        return BimaruState(new_board, boards_left)
+
 
     def goal_test(self, state: BimaruState):
         """Retorna True se e só se o estado passado como argumento é
@@ -259,13 +338,14 @@ if __name__ == "__main__":
 
     # Debug
     board.print_board()
-    board.coloca_barco([[5,0], 'h', 5]).print_board()
+
+    print(board.rows, board.columns)
 
     # Usar uma técnica de procura para resolver a instância,
-        #result_node = depth_first_tree_search(problem)
-
+    result_node = depth_first_tree_search(problem)
+    #problem.actions(problem.initial)
     # Retirar a solução a partir do nó resultante,
-        #result = result_node.state.board
+    #result = result_node.state.board
 
     # Imprimir para o standard output no formato indicado.
-        #result.print_board() # RETIRAR OS ESPAÇOS NA ENTREGA
+    #result.print_board() # RETIRAR OS ESPAÇOS NA ENTREGA
