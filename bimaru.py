@@ -37,6 +37,15 @@ class BimaruState:
     def __lt__(self, other):
         return self.id < other.id
 
+    def remove_c(self):
+        board = self.board.board
+
+        for i in range(BOARD_SIZE):
+            for j in range(BOARD_SIZE):
+                if board[i][j] == 'C':
+                    self.boards_left[1] -= 1
+                    self.board.rows[i] -= 1
+                    self.board.columns[j] -= 1
     # TODO: outros metodos da classe
 
 
@@ -117,13 +126,13 @@ class Board:
         elif char == 'R':
             x_limits += [x-1, x+2]
             y_limits += [y, y+2]
-        else:   
+        else:   # char == 'C'
             x_limits += [x-1, x+2]
             y_limits += [y-1, y+2]
 
         for i in range(x_limits[0], x_limits[1]):
             for j in range(y_limits[0], y_limits[1]):
-                if (i != x or j != y) and 0 <= i < 10 and 0 <= j < 10:
+                if (i != x or j != y) and 0 <= i < 10 and 0 <= j < 10 and self.board[i][j] == '':
                     self.board[i, j] = '.'
 
 
@@ -169,11 +178,11 @@ class Board:
         for i in range(BOARD_SIZE):
             for j in range(BOARD_SIZE):
                 if board[i][j] == '':
-                    output += "_ "
+                    output += "_"
                 else:
-                    output += board[i][j] + " "
-
-            output += "\n"
+                    output += board[i][j]
+            if i != BOARD_SIZE - 1:
+                output += "\n"
 
         print(output)
         
@@ -213,22 +222,28 @@ class Board:
         # Horizontal
 
         elif orientacao == 'h':
-            board[x][y] = 'l'
+            if board[x][y] != 'L':
+                board[x][y] = 'l'
 
             for i in range(1, size - 1):
-                board[x][y + i] = 'm'
+                if board[x][y + i] != 'M':
+                    board[x][y + i] = 'm'
 
-            board[x][y + size - 1] = 'r'
+            if board[x][y + size - 1] != 'R':
+                board[x][y + size - 1] = 'r'
         
         # Vertical
         else:
             if board[x][y] == '':
-                board[x][y] = 't'
+                if board[x][y] != 'T':
+                    board[x][y] = 't'
 
             for i in range(1, size - 1):
-                board[x + i][y] = 'm'
+                if board[x + i][y] != 'M':
+                    board[x + i][y] = 'm'
 
-            board[x + size - 1][y] = 'b'
+            if board[x + size - 1][y] != 'B':
+                board[x + size - 1][y] = 'b'
 
 
         # Coloca as aguas
@@ -266,7 +281,27 @@ class Board:
                 rows[i] -= 1
 
         return Board(board, rows, columns)
-    
+
+    def check_valid_board(self):
+        #! Meter as hints no board para nao fazer loop duplo aqui
+        board = self.board
+        for i in range(BOARD_SIZE):
+            for j in range(BOARD_SIZE):
+                if board[i][j] == 'T' and board[i+1][j] == '.':
+                    return 0
+                elif board[i][j] == 'B' and board[i-1][j] == '.':
+                    return 0
+                elif board[i][j] == 'L' and board[i][j + 1] == '.':
+                    return 0
+                elif board[i][j] == 'R' and board[i][j - 1] == '.':
+                    return 0 
+                # ^ -> XOR
+                elif board[i][j] == 'M' and (i==9 or i==0 or board[i - 1][j] == '.' or board[i + 1][j] == '.'):
+                    if j == 0 or j == 9 or board[i][j - 1] == '.' or board[i][j + 1] in ['.', 'l']:
+                        return 0
+
+        return 1
+
     # TODO: outros metodos da classe
 
 
@@ -277,13 +312,16 @@ class Bimaru(Problem):
         initial = BimaruState(board, boards_left=[0,4,3,2,1])
         super().__init__(initial)
 
+        initial.remove_c()
+        
+
 
     # Acao: [posicao, orientacao (h/v), tamanho do barco]
     def actions(self, state: BimaruState):
         """Retorna uma lista de ações que podem ser executadas a
         partir do estado passado como argumento."""
 
-        if state.board.check_full_board() or state.boards_left[1] == 0:
+        if state.board.check_full_board() or (state.boards_left[1] == 0 and state.boards_left[2] == 0):
             return []
 
         actions = []
@@ -341,8 +379,8 @@ class Bimaru(Problem):
         
         new_board.fill_water()
 
-        print(state.board.rows, state.board.columns)
-        new_board.print_board()
+        ##print(state.board.rows, state.board.columns)
+        #new_board.print_board()
 
         return BimaruState(new_board, boards_left)
 
@@ -352,7 +390,7 @@ class Bimaru(Problem):
         um estado objetivo. Deve verificar se todas as posições do tabuleiro
         estão preenchidas de acordo com as regras do problema."""
         
-        return state.board.check_full_board()
+        return state.board.check_full_board() and state.board.check_valid_board()
     
     def h(self, node: Node):
         """Função heuristica utilizada para a procura A*."""
@@ -374,7 +412,7 @@ if __name__ == "__main__":
     problem = Bimaru(board)
     
     # ! Debug
-    board.print_board()
+    #board.print_board()
 
     # * Usar uma técnica de procura para resolver a instância,
     result_node = depth_first_tree_search(problem)
