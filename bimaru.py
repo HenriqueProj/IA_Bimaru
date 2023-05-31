@@ -110,30 +110,154 @@ class Board:
         return Board(board, rows, columns)
 
     def rodeia_agua(self, x, y, char):
-        
-        x_limits = []
-        y_limits = []
-
         if char == 'T':
-            x_limits += [x-1, x+1]
-            y_limits += [y-1, y+2]
-        elif char == 'B':
-            x_limits += [x, x+2]
-            y_limits += [y-1, y+2]
-        elif char == 'L':
-            x_limits += [x-1, x+2]
-            y_limits += [y-1, y+1]
-        elif char == 'R':
-            x_limits += [x-1, x+2]
-            y_limits += [y, y+2]
-        else:   # char == 'C'
-            x_limits += [x-1, x+2]
-            y_limits += [y-1, y+2]
+            if x > 0:
+                if self.board[x - 1, y] == '':
+                    self.board[x - 1, y] = '.'
 
-        for i in range(x_limits[0], x_limits[1]):
-            for j in range(y_limits[0], y_limits[1]):
-                if (i != x or j != y) and 0 <= i < 10 and 0 <= j < 10 and self.board[i][j] == '':
-                    self.board[i, j] = '.'
+                if y > 0:
+                    if self.board[x - 1][y - 1] == '':
+                        self.board[x - 1][y - 1] = '.'
+
+                if y < 9:
+                    if self.board[x - 1][y + 1] == '':
+                        self.board[x - 1][y + 1] = '.'
+
+            if y > 0:
+                if self.board[x][y - 1] == '':
+                    self.board[x][y - 1] = '.'
+
+                    if x < 9:
+                        if self.board[x + 1][y - 1] == '':
+                            self.board[x + 1][y - 1] = '.'
+
+            if y < 9:
+                if self.board[x][y + 1] == '':
+                    self.board[x][y + 1] = '.'
+
+                    if x < 9:
+                        if self.board[x + 1][y + 1] == '':
+                            self.board[x + 1][y + 1] = '.'
+
+        elif char == 'B':
+            if x < 9:
+                if self.board[x + 1, y] == '':
+                    self.board[x + 1, y] = '.'
+
+                if y > 0:
+                    if self.board[x + 1][y - 1] == '':
+                        self.board[x + 1][y - 1] = '.'
+
+                if y < 9:
+                    if self.board[x + 1][y + 1] == '':
+                        self.board[x + 1][y + 1] = '.'
+
+            if y > 0:
+                if self.board[x][y - 1] == '':
+                    self.board[x][y - 1] = '.'
+
+                    if x > 0:
+                        if self.board[x - 1][y - 1] == '':
+                            self.board[x - 1][y - 1] = '.'
+
+            if y < 9:
+                if self.board[x][y + 1] == '':
+                    self.board[x][y + 1] = '.'
+
+                    if x > 0:
+                        if self.board[x - 1][y + 1] == '':
+                            self.board[x - 1][y + 1] = '.'
+
+        elif char == 'L':
+            if x < 9:
+                if self.board[x + 1, y] == '':
+                    self.board[x + 1, y] = '.'
+
+                if y > 0:
+                    if self.board[x + 1][y - 1] == '':
+                        self.board[x + 1][y - 1] = '.'
+
+                if y < 9:
+                    if self.board[x + 1][y + 1] == '':
+                        self.board[x + 1][y + 1] = '.'
+
+            if x > 0:
+                if self.board[x - 1, y] == '':
+                    self.board[x - 1, y] = '.'
+
+                if y > 0:
+                    if self.board[x - 1][y - 1] == '':
+                        self.board[x - 1][y - 1] = '.'
+
+                if y < 9:
+                    if self.board[x - 1][y + 1] == '':
+                        self.board[x - 1][y + 1] = '.'
+
+            if y > 0:
+                if self.board[x][y - 1] == '':
+                    self.board[x][y - 1] = '.'
+
+        elif char == 'R':
+            if x < 9:
+                if self.board[x + 1, y] == '':
+                    self.board[x + 1, y] = '.'
+
+                if y > 0:
+                    if self.board[x + 1][y - 1] == '':
+                        self.board[x + 1][y - 1] = '.'
+
+                if y < 9:
+                    if self.board[x + 1][y + 1] == '':
+                        self.board[x + 1][y + 1] = '.'
+
+            if x > 0:
+                if self.board[x - 1, y] == '':
+                    self.board[x - 1, y] = '.'
+
+                if y > 0:
+                    if self.board[x - 1][y - 1] == '':
+                        self.board[x - 1][y - 1] = '.'
+
+                if y < 9:
+                    if self.board[x - 1][y + 1] == '':
+                        self.board[x - 1][y + 1] = '.'
+
+            if y < 9:
+                if self.board[x][y + 1] == '':
+                    self.board[x][y + 1] = '.'
+
+        else:   # char == 'C'
+            if x < 9:
+                if self.board[x + 1, y] == '':
+                    self.board[x + 1, y] = '.'
+
+                if y > 0:
+                    if self.board[x + 1][y - 1] == '':
+                        self.board[x + 1][y - 1] = '.'
+
+                if y < 9:
+                    if self.board[x + 1][y + 1] == '':
+                        self.board[x + 1][y + 1] = '.'
+
+            if x > 0:
+                if self.board[x - 1, y] == '':
+                    self.board[x - 1, y] = '.'
+
+                if y > 0:
+                    if self.board[x - 1][y - 1] == '':
+                        self.board[x - 1][y - 1] = '.'
+
+                if y < 9:
+                    if self.board[x - 1][y + 1] == '':
+                        self.board[x - 1][y + 1] = '.'
+
+            if y > 0:
+                if self.board[x][y - 1] == '':
+                    self.board[x][y - 1] = '.'
+
+            if y < 9:
+                if self.board[x][y + 1] == '':
+                    self.board[x][y + 1] = '.'
 
 
     # Preenche as linhas ou colunas de agua, Rodeando os C's de agua
@@ -194,6 +318,11 @@ class Board:
             for j in range(BOARD_SIZE):
                 if board[i][j] == '':
                     return 0
+                
+        for i in range(BOARD_SIZE):
+            if self.rows[i] != 0 or self.columns[i] != 0:
+                return 0
+
         return 1
 
     def coloca_barco(self, action):
@@ -217,7 +346,13 @@ class Board:
 
         # Size 1
         if size == 1:
+            #if x == 9 and y == 9:
+            #    self.print_board()
             board[x][y] = 'c'
+            #if x == 9 and y == 9:
+            #    print()
+            #    Board(board, rows, columns).print_board()
+
 
         # Horizontal
 
@@ -330,24 +465,46 @@ class Bimaru(Problem):
         boards_left = np.copy(state.boards_left)
         board = np.copy(state.board.board)
 
+        letras_horizontal = ['.', 'W', 'T', 'B', 'C', 'l']# 't', 'b', 'c']
+        letras_vertical = ['.', 'W', 'L', 'R', 'C']# 'l', 'r', 'c',]
+
         # Descobrir o maior barco possivel
         for i in range(4):
             if boards_left[4 - i] > 0:
                 biggest_boat = 4 - i
                 break
+        
+        # Size 1
+        if biggest_boat == 1:
+            for i in range(BOARD_SIZE):
+                if state.board.rows[i] < biggest_boat:
+                    continue
+                    
+                for j in range(BOARD_SIZE):
+                    if state.board.columns[j] >= biggest_boat and board[i][j] == '':
+                        actions.append([ [i, j], [''], biggest_boat])
+
+            return actions
+        
 
         # Procura horizontal
         for i in range(BOARD_SIZE):
             if state.board.rows[i] < biggest_boat:
                 continue
-
+            
             for j in range(BOARD_SIZE):
+                if j != 0 and board[i][j-1] == 'L':
+                    break
+
                 for size in range(biggest_boat):
-                    if j + size >= 10 or board[i][j + size] in ['.', 'W', 'T', 'B'] or state.board.columns[j + size] < 1:
+                    # 
+                    if j + size >= 10 or board[i][j + size] in letras_horizontal or state.board.columns[j + size] < 1:
+                        #
+                        #if j == 9 or 1:  
                         break
-                    
-                    if size == biggest_boat - 1:
-                        actions += [[ [i,j], ['h'], biggest_boat ]]
+
+                    if size == biggest_boat - 1 and board[i][j + size] != 'M':
+                        actions += [[ [i,j], ['h'], biggest_boat]]
                     
         # Procura vertical
         for j in range(BOARD_SIZE):
@@ -357,7 +514,7 @@ class Bimaru(Problem):
 
             for i in range(BOARD_SIZE):
                 for size in range(biggest_boat):
-                    if i + size >= 10 or board[i + size][j] in ['.', 'W', 'L', 'R'] or state.board.rows[i + size] < 1:
+                    if i + size >= 10 or board[i + size][j] in letras_vertical or state.board.rows[i + size] < 1:
                         break
                     
                     if size == biggest_boat - 1:
@@ -410,7 +567,10 @@ if __name__ == "__main__":
 
     # * Inicializa o problem (que cria o primeiro state)
     problem = Bimaru(board)
+    #problem.initial.board.print_board()
     
+
+
     # ! Debug
     #board.print_board()
 
@@ -421,4 +581,5 @@ if __name__ == "__main__":
     result = result_node.state.board
 
     # * Imprimir para o standard output no formato indicado.
-    result.print_board() # RETIRAR OS ESPAÇOS NA ENTREGA
+    #result.print_board() # RETIRAR OS ESPAÇOS NA ENTREGA
+    #print(result_node.state.board.rows, result_node.state.board.columns)
