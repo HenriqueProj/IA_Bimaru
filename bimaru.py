@@ -357,27 +357,26 @@ class Board:
         # Horizontal
 
         elif orientacao == 'h':
-            if board[x][y] != 'L':
+            if board[x][y] == '':
                 board[x][y] = 'l'
 
             for i in range(1, size - 1):
-                if board[x][y + i] != 'M':
+                if board[x][y + i] == '':
                     board[x][y + i] = 'm'
 
-            if board[x][y + size - 1] != 'R':
+            if board[x][y + size - 1] == '':
                 board[x][y + size - 1] = 'r'
         
         # Vertical
         else:
             if board[x][y] == '':
-                if board[x][y] != 'T':
-                    board[x][y] = 't'
+                board[x][y] = 't'
 
             for i in range(1, size - 1):
-                if board[x + i][y] != 'M':
+                if board[x + i][y] == '':
                     board[x + i][y] = 'm'
 
-            if board[x + size - 1][y] != 'B':
+            if board[x + size - 1][y] == '':
                 board[x + size - 1][y] = 'b'
 
 
@@ -422,13 +421,13 @@ class Board:
         board = self.board
         for i in range(BOARD_SIZE):
             for j in range(BOARD_SIZE):
-                if board[i][j] == 'T' and board[i+1][j] == '.':
+                if board[i][j] == 'T' and board[i+1][j] in ['c', '.']:
                     return 0
-                elif board[i][j] == 'B' and board[i-1][j] == '.':
+                elif board[i][j] == 'B' and board[i-1][j] in ['c', '.']:
                     return 0
-                elif board[i][j] == 'L' and board[i][j + 1] == '.':
+                elif board[i][j] == 'L' and board[i][j + 1] in ['c', '.']:
                     return 0
-                elif board[i][j] == 'R' and board[i][j - 1] == '.':
+                elif board[i][j] == 'R' and board[i][j - 1] in ['c', '.']:
                     return 0 
                 # ^ -> XOR
                 elif board[i][j] == 'M' and (i==9 or i==0 or board[i - 1][j] == '.' or board[i + 1][j] == '.'):
@@ -465,9 +464,9 @@ class Bimaru(Problem):
         boards_left = np.copy(state.boards_left)
         board = np.copy(state.board.board)
 
-        letras_horizontal = ['.', 'W', 'T', 'B', 'C', 'l']# 't', 'b', 'c']
-        letras_vertical = ['.', 'W', 'L', 'R', 'C']# 'l', 'r', 'c',]
-
+        letras_horizontal = ['.', 'W', 'T', 'B', 'C', 'l', 'r','t', 'b', 'c']
+        letras_vertical = ['.', 'W', 'L', 'R', 'C', 't', 'b', 'l', 'r', 'c',]
+    
         # Descobrir o maior barco possivel
         for i in range(4):
             if boards_left[4 - i] > 0:
@@ -493,8 +492,8 @@ class Bimaru(Problem):
                 continue
             
             for j in range(BOARD_SIZE):
-                if j != 0 and board[i][j-1] == 'L':
-                    break
+                if j != 0 and board[i][j-1] not in ['W', '', '.']:
+                    continue
 
                 for size in range(biggest_boat):
                     # 
@@ -503,7 +502,7 @@ class Bimaru(Problem):
                         #if j == 9 or 1:  
                         break
 
-                    if size == biggest_boat - 1 and board[i][j + size] != 'M':
+                    if size == biggest_boat - 1 and board[i][j + size] != 'M' and (j + size + 1 >= 10 or board[i][j + size + 1] in ['W', '', '.']) :
                         actions += [[ [i,j], ['h'], biggest_boat]]
                     
         # Procura vertical
@@ -513,11 +512,14 @@ class Bimaru(Problem):
                 continue
 
             for i in range(BOARD_SIZE):
+                if i != 0 and board[i - 1][j] not in ['W', '', '.']:
+                    continue
+
                 for size in range(biggest_boat):
                     if i + size >= 10 or board[i + size][j] in letras_vertical or state.board.rows[i + size] < 1:
                         break
                     
-                    if size == biggest_boat - 1:
+                    if size == biggest_boat - 1 and board[i + size][j] != 'M' and (i + size + 1 >= 10 or board[i + size + 1][j] in ['W', '', '.']):
                         actions += [[ [i,j], ['v'], biggest_boat ]]
 
         return actions
@@ -581,5 +583,5 @@ if __name__ == "__main__":
     result = result_node.state.board
 
     # * Imprimir para o standard output no formato indicado.
-    #result.print_board() # RETIRAR OS ESPAÇOS NA ENTREGA
+    result.print_board()
     #print(result_node.state.board.rows, result_node.state.board.columns)
