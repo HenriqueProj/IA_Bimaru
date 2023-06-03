@@ -39,25 +39,26 @@ class BimaruState:
 
     def remove_c(self):
         board = self.board.board
+        hints = self.board.hints
 
-        for i in range(BOARD_SIZE):
-            for j in range(BOARD_SIZE):
-                if board[i][j] == 'C':
-                    self.boards_left[1] -= 1
-                    self.board.rows[i] -= 1
-                    self.board.columns[j] -= 1
-    # TODO: outros metodos da classe
+        for hint in hints:
+            if hint[2] == 'C':
+                self.boards_left[1] -= 1
+                self.board.rows[int(hint[0])] -= 1
+                self.board.columns[int(hint[1])] -= 1
+
 
 
 class Board:
     """Representação interna de um tabuleiro de Bimaru."""
 
-    def __init__(self, board, rows, columns) -> None:
+    def __init__(self, board, rows, columns, hints) -> None:
         self.board = board
 
         # Valores de cells por linhas e colunas (Por no state??)
         self.rows = rows
         self.columns = columns
+        self.hints  = hints
 
     def get_value(self, row: int, col: int) -> str:
         """Devolve o valor na respetiva posição do tabuleiro."""
@@ -88,7 +89,9 @@ class Board:
     def parse_instance():
 
         board = np.empty((BOARD_SIZE, BOARD_SIZE), dtype=str)
-                         
+        
+        hints = []
+
         # Salta o primeiro valor do input (ROW e COLUMN)
         rows = [int(x) for x in stdin.readline().split()[1:]] 
         columns = [int(x) for x in stdin.readline().split()[1:]]
@@ -100,6 +103,7 @@ class Board:
         for cont in range(hint_num):
             # Skip no HINT
             hint = stdin.readline().split()[1:]
+            hints += [hint,]
 
             board[int(hint[0]), int(hint[1])] = hint[2]
 
@@ -107,7 +111,7 @@ class Board:
             #    rows[int(hint[0])] -= 1
             #    columns[int(hint[1])] -= 1
 
-        return Board(board, rows, columns)
+        return Board(board, rows, columns, hints)
 
     def rodeia_agua(self, x, y, char):
         if char == 'T':
@@ -276,22 +280,24 @@ class Board:
                 if self.board[j][i] == '':
                     self.board[j][i] = '.'
 
-        for i in range(BOARD_SIZE):
-            for j in range(BOARD_SIZE):
-                if self.board[i][j] == 'C':
-                    self.rodeia_agua(i, j, 'C')
-                
-                elif self.board[i][j] == 'B':
-                    self.rodeia_agua(i, j, 'B')
+        for hint in self.hints:
+            i = int(hint[0])
+            j = int(hint[1])
 
-                elif self.board[i][j] == 'T':
-                    self.rodeia_agua(i, j, 'T')
+            if hint[2] == 'C':
+                self.rodeia_agua(i, j, 'C')
+            
+            elif hint[2] == 'B':
+                self.rodeia_agua(i, j, 'B')
 
-                elif self.board[i][j] == 'L':
-                    self.rodeia_agua(i, j, 'L')
+            elif hint[2] == 'T':
+                self.rodeia_agua(i, j, 'T')
 
-                elif self.board[i][j] == 'R':
-                    self.rodeia_agua(i, j, 'R')
+            elif hint[2] == 'L':
+                self.rodeia_agua(i, j, 'L')
+
+            elif hint[2] == 'R':
+                self.rodeia_agua(i, j, 'R')
 
     # Imprime o tabuleiro no formato indicado
     def print_board(self):
@@ -315,13 +321,13 @@ class Board:
         board = self.board
 
         for i in range(BOARD_SIZE):
+            if self.rows[i] != 0 or self.columns[i] != 0:
+                return 0
+
+        for i in range(BOARD_SIZE):
             for j in range(BOARD_SIZE):
                 if board[i][j] == '':
                     return 0
-                
-        for i in range(BOARD_SIZE):
-            if self.rows[i] != 0 or self.columns[i] != 0:
-                return 0
 
         return 1
 
@@ -414,25 +420,28 @@ class Board:
             for i in range(x, x + size):
                 rows[i] -= 1
 
-        return Board(board, rows, columns)
+        return Board(board, rows, columns, self.hints)
 
     def check_valid_board(self):
         #! Meter as hints no board para nao fazer loop duplo aqui
         board = self.board
-        for i in range(BOARD_SIZE):
-            for j in range(BOARD_SIZE):
-                if board[i][j] == 'T' and board[i+1][j] in ['c', '.']:
-                    return 0
-                elif board[i][j] == 'B' and board[i-1][j] in ['c', '.']:
-                    return 0
-                elif board[i][j] == 'L' and board[i][j + 1] in ['c', '.']:
-                    return 0
-                elif board[i][j] == 'R' and board[i][j - 1] in ['c', '.']:
-                    return 0 
+        
+        for hint in self.hints:
+            i = int(hint[0])
+            j = int(hint[1])
+
+            if board[i][j] == 'T' and board[i+1][j] in ['c', '.']:
+                return 0
+            elif board[i][j] == 'B' and board[i-1][j] in ['c', '.']:
+                return 0
+            elif board[i][j] == 'L' and board[i][j + 1] in ['c', '.']:
+                return 0
+            elif board[i][j] == 'R' and board[i][j - 1] in ['c', '.']:
+                return 0 
                 # ^ -> XOR
-                elif board[i][j] == 'M' and (i==9 or i==0 or board[i - 1][j] == '.' or board[i + 1][j] == '.'):
-                    if j == 0 or j == 9 or board[i][j - 1] == '.' or board[i][j + 1] in ['.', 'l']:
-                        return 0
+            elif board[i][j] == 'M' and (i==9 or i==0 or board[i - 1][j] == '.' or board[i + 1][j] == '.'):
+                if j == 0 or j == 9 or board[i][j - 1] == '.' or board[i][j + 1] in ['.', 'l']:
+                    return 0
 
         return 1
 
@@ -455,17 +464,18 @@ class Bimaru(Problem):
         """Retorna uma lista de ações que podem ser executadas a
         partir do estado passado como argumento."""
 
-        if state.board.check_full_board() or (state.boards_left[1] == 0 and state.boards_left[2] == 0):
+        #! Pre processamento - Otimizar?
+        if state.board.check_full_board() or not state.board.check_valid_board() or (state.boards_left[1] == 0 and state.boards_left[2] == 0):
             return []
 
         actions = []
         biggest_boat = 0
 
-        boards_left = np.copy(state.boards_left)
-        board = np.copy(state.board.board)
+        boards_left = state.boards_left
+        board = state.board.board
 
-        letras_horizontal = ['.', 'W', 'T', 'B', 'C', 'l', 'r','t', 'b', 'c']
-        letras_vertical = ['.', 'W', 'L', 'R', 'C', 't', 'b', 'l', 'r', 'c',]
+        letras_horizontal = ['', 'M', 'R']
+        letras_vertical = ['', 'M', 'B']
     
         # Descobrir o maior barco possivel
         for i in range(4):
@@ -480,7 +490,7 @@ class Bimaru(Problem):
                     continue
                     
                 for j in range(BOARD_SIZE):
-                    if state.board.columns[j] >= biggest_boat and board[i][j] == '':
+                    if state.board.columns[j] >= 1 and board[i][j] == '':
                         actions.append([ [i, j], [''], biggest_boat])
 
             return actions
@@ -494,10 +504,13 @@ class Bimaru(Problem):
             for j in range(BOARD_SIZE):
                 if j != 0 and board[i][j-1] not in ['W', '', '.']:
                     continue
+                
+                if board[i][j] not in ['L', '']:
+                    continue
 
-                for size in range(biggest_boat):
+                for size in range(1, biggest_boat):
                     # 
-                    if j + size >= 10 or board[i][j + size] in letras_horizontal or state.board.columns[j + size] < 1:
+                    if j + size >= 10 or board[i][j + size] not in letras_horizontal or state.board.columns[j + size] < 1:
                         #
                         #if j == 9 or 1:  
                         break
@@ -510,13 +523,16 @@ class Bimaru(Problem):
             
             if state.board.columns[j] < biggest_boat:
                 continue
-
+            
             for i in range(BOARD_SIZE):
                 if i != 0 and board[i - 1][j] not in ['W', '', '.']:
                     continue
 
-                for size in range(biggest_boat):
-                    if i + size >= 10 or board[i + size][j] in letras_vertical or state.board.rows[i + size] < 1:
+                if board[i][j] not in ['T', '']:
+                    continue
+
+                for size in range(1, biggest_boat):
+                    if i + size >= 10 or board[i + size][j] not in letras_vertical or state.board.rows[i + size] < 1:
                         break
                     
                     if size == biggest_boat - 1 and board[i + size][j] != 'M' and (i + size + 1 >= 10 or board[i + size + 1][j] in ['W', '', '.']):
@@ -569,19 +585,12 @@ if __name__ == "__main__":
 
     # * Inicializa o problem (que cria o primeiro state)
     problem = Bimaru(board)
-    #problem.initial.board.print_board()
-    
-
-
-    # ! Debug
-    #board.print_board()
 
     # * Usar uma técnica de procura para resolver a instância,
     result_node = depth_first_tree_search(problem)
     
     # * Retirar a solução a partir do nó resultante,
     result = result_node.state.board
-
+    
     # * Imprimir para o standard output no formato indicado.
     result.print_board()
-    #print(result_node.state.board.rows, result_node.state.board.columns)
