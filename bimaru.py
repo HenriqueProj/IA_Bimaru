@@ -2,9 +2,9 @@
 # Devem alterar as classes e funções neste ficheiro de acordo com as instruções do enunciado.
 # Além das funções e classes já definidas, podem acrescentar outras que considerem pertinentes.
 
-# Grupo 00:
-# 00000 Nome1
-# 00000 Nome2
+# Grupo 111:
+# 103860 Henrique Caroço
+# 96182 Diogo Costa
 
 import sys
 from sys import stdin
@@ -496,7 +496,7 @@ class Bimaru(Problem):
             return actions
         
 
-        # Procura horizontal
+        # Procura horizontal size 2+
         for i in range(BOARD_SIZE):
             if state.board.rows[i] < biggest_boat:
                 continue
@@ -537,6 +537,7 @@ class Bimaru(Problem):
                     
                     if size == biggest_boat - 1 and board[i + size][j] != 'M' and (i + size + 1 >= 10 or board[i + size + 1][j] in ['W', '', '.']):
                         actions += [[ [i,j], ['v'], biggest_boat ]]
+
 
         return actions
 
