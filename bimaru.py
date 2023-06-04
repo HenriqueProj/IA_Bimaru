@@ -319,14 +319,14 @@ class Board:
     # Retorna 1 caso o tabuleiro esteja cheio
     def check_full_board(self):
         board = self.board
-
+        
         for i in range(BOARD_SIZE):
             if self.rows[i] != 0 or self.columns[i] != 0:
                 return 0
 
         for i in range(BOARD_SIZE):
             for j in range(BOARD_SIZE):
-                if board[i][j] == '':
+                if self.board[i][j] == '':
                     return 0
 
         return 1
@@ -414,11 +414,32 @@ class Board:
 
             for j in range(y, y + size):
                 columns[j] -= 1
+
+                if columns[j] == 0:
+                    for cont in range(BOARD_SIZE):
+                        if board[cont][j] == '':
+                            board[cont][j] = '.'
+
+            if rows[x] == 0:
+                for cont in range(BOARD_SIZE):
+                    if board[x][cont] == '':
+                        board[x][cont] = '.'
+
         else:
             columns[y] -= size
+            
+            if columns[y] == 0:
+                for cont in range(BOARD_SIZE):
+                    if board[cont][y] == '':
+                        board[cont][y] = '.'
 
             for i in range(x, x + size):
                 rows[i] -= 1
+
+                if rows[i] == 0:
+                    for cont in range(BOARD_SIZE):
+                        if board[i][cont] == '':
+                            board[i][cont] = '.'
 
         return Board(board, rows, columns, self.hints)
 
@@ -430,17 +451,17 @@ class Board:
             i = int(hint[0])
             j = int(hint[1])
 
-            if board[i][j] == 'T' and board[i+1][j] in ['c', '.']:
+            if board[i][j] == 'T' and board[i+1][j] not in ['M', 'B', 'm', 'b', '']:
                 return 0
-            elif board[i][j] == 'B' and board[i-1][j] in ['c', '.']:
+            elif board[i][j] == 'B' and board[i-1][j] not in ['M', 'T', 'm', 't', '']:
                 return 0
-            elif board[i][j] == 'L' and board[i][j + 1] in ['c', '.']:
+            elif board[i][j] == 'L' and board[i][j + 1] not in ['M', 'R', 'm', 'r', '']:
                 return 0
-            elif board[i][j] == 'R' and board[i][j - 1] in ['c', '.']:
+            elif board[i][j] == 'R' and board[i][j - 1] not in ['M', 'L', 'm', 'l', '']:
                 return 0 
                 # ^ -> XOR
             elif board[i][j] == 'M' and (i==9 or i==0 or board[i - 1][j] == '.' or board[i + 1][j] == '.'):
-                if j == 0 or j == 9 or board[i][j - 1] == '.' or board[i][j + 1] in ['.', 'l']:
+                if j == 0 or j == 9 or board[i][j - 1] == '.' or board[i][j + 1] in ['.']:
                     return 0
 
         return 1
@@ -532,7 +553,7 @@ class Bimaru(Problem):
                     continue
 
                 for size in range(1, biggest_boat):
-                    if i + size >= 10 or board[i + size][j] not in letras_vertical or state.board.rows[i + size] < 1:
+                    if i + size >= 10 or state.board.rows[i + size] < 1 or board[i + size][j] not in letras_vertical or state.board.rows[i + size] < 1:
                         break
                     
                     if size == biggest_boat - 1 and board[i + size][j] != 'M' and (i + size + 1 >= 10 or board[i + size + 1][j] in ['W', '', '.']):
@@ -553,7 +574,7 @@ class Bimaru(Problem):
         boards_left = np.copy(state.boards_left)
         boards_left[action[2]] -= 1
         
-        new_board.fill_water()
+        #new_board.fill_water()
 
         ##print(state.board.rows, state.board.columns)
         #new_board.print_board()
