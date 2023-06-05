@@ -107,10 +107,6 @@ class Board:
 
             board[int(hint[0]), int(hint[1])] = hint[2]
 
-            #if hint[2] != 'W':
-            #    rows[int(hint[0])] -= 1
-            #    columns[int(hint[1])] -= 1
-
         return Board(board, rows, columns, hints)
 
     def rodeia_agua(self, x, y, char):
@@ -352,12 +348,7 @@ class Board:
 
         # Size 1
         if size == 1:
-            #if x == 9 and y == 9:
-            #    self.print_board()
             board[x][y] = 'c'
-            #if x == 9 and y == 9:
-            #    print()
-            #    Board(board, rows, columns).print_board()
 
 
         # Horizontal
@@ -532,8 +523,6 @@ class Bimaru(Problem):
                 for size in range(1, biggest_boat):
                     # 
                     if j + size >= 10 or board[i][j + size] not in letras_horizontal or state.board.columns[j + size] < 1:
-                        #
-                        #if j == 9 or 1:  
                         break
 
                     if size == biggest_boat - 1 and board[i][j + size] != 'M' and (j + size + 1 >= 10 or board[i][j + size + 1] in ['W', '', '.']) :
@@ -573,11 +562,6 @@ class Bimaru(Problem):
 
         boards_left = np.copy(state.boards_left)
         boards_left[action[2]] -= 1
-        
-        #new_board.fill_water()
-
-        ##print(state.board.rows, state.board.columns)
-        #new_board.print_board()
 
         return BimaruState(new_board, boards_left)
 
